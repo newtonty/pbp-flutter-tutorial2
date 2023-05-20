@@ -1,6 +1,7 @@
 import 'package:money_tracker/pages/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:money_tracker/pages/form.dart';
+import 'package:money_tracker/pages/transaction.dart';
 
 class DrawerMenu extends StatelessWidget {
 
@@ -19,7 +20,17 @@ class DrawerMenu extends StatelessWidget {
               MaterialPageRoute(builder: (context) => MyHomePage()),
             );
             }
-          ) 
+          ), 
+          ListTile(
+            title: const Text('Riwayat Transaksi'),
+            onTap: () {
+              // Route menu ke halaman transaksi
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const TransactionPage()),
+              );
+            },
+          ),
         ],
       ),
     );

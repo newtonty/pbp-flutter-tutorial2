@@ -1,6 +1,11 @@
+import 'dart:io';
+import 'dart:convert' as convert;
+import 'package:money_tracker/pages/transaction.dart';
 import 'package:money_tracker/widgets/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class MyFormPage extends StatefulWidget{
   const MyFormPage({super.key});
@@ -19,6 +24,7 @@ class _MyFormPageState extends State<MyFormPage> {
 
   @override
   Widget build(BuildContext context) {
+  final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Form'),
@@ -169,36 +175,34 @@ class _MyFormPageState extends State<MyFormPage> {
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.blue),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 15,
-                            child: Container(
-                              child: ListView(
-                                padding: const EdgeInsets.only(top: 20, bottom: 20),
-                                shrinkWrap: true,
-                                children: <Widget>[
-                                  Center(child: const Text('Informasi Data')),
-                                  SizedBox(height: 20),
-                                  // TODO: Munculkan informasi yang didapat dari form
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('Kembali'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
+                      // Kirim ke Django dan tunggu respons
+                      // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+                      final response = await request.postJson(
+                      "https://money_tracker/tracker/create-flutter/",
+                      convert.jsonEncode(<String, String>{
+                          'name': _namaTransaksi,
+                          'type': tipeTransaksi,
+                          'amount': jumlahTransaksi.toString(),
+                          'description': _deskripsiTransaksi
+                      }));
+                      if (response['status'] == 'success') {
+                          ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                        content: Text("Transaksi baru berhasil disimpan!"),
+                        ));
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TransactionPage()),
+                        );
+                      } else {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                              content:
+                                  Text("Terdapat kesalahan, silakan coba lagi."),
+                          ));
+                      }
                     }
                   },
                 ),

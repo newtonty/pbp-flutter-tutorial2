@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:money_tracker/pages/transaction_record.dart';
 import 'package:money_tracker/widgets/drawer.dart';
 import 'package:money_tracker/pages/form.dart';
+import 'package:money_tracker/pages/login.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -43,13 +45,26 @@ class MyHomePage extends StatelessWidget {
               Material(
                 color: Colors.green,
                 child: InkWell( // Area responsive terhadap sentuhan
-                  onTap: () {
-                    // Memunculkan SnackBar ketika diklik
-                    ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(const SnackBar(
-                      content: Text("Kamu telah menekan tombol Lihat Riwayat Transaksi!")));
-                  },
+                  onTap: () async {
+                    final response = await request.logout(
+                        // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+                        "https://money_tracker/auth/logout/");
+                        String message = response["message"];
+                        if (response['status']) {
+                            String uname = response["username"];
+                            ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+                              content: Text("$message Sampai jumpa, $uname."),
+                            ));
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                        } else {
+                            ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+                            content: Text("$message"),
+                        ));
+                        }
+                    },
                   child: Container( // Container untuk menyimpan Icon dan Text
                     padding: const EdgeInsets.all(8),
                     child: Center(
